@@ -1,11 +1,11 @@
 #' Launch a linux bash shell
 #'
-#' @param command
-#' @param current_dir
-#' @param complete_path
-#' @param intern
+#' @param command call system and returns
+#' @param current_dir dir of execution
+#' @param complete_path prompts the absolute path of current directory
+#' @param intern returns shell output (see system)
 #'
-#' @return
+#' @return nothing or shell ouput
 #' @export
 #'
 #' @examples

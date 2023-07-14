@@ -9,6 +9,7 @@
 #' @export
 #'
 #' @examples
+#' sh()
 sh <- function(command = NULL,
                current_dir = getwd(),
                complete_path = FALSE,
@@ -20,7 +21,8 @@ sh <- function(command = NULL,
       r <- readline(format_prompt(complete_path, current_dir))
       if (r == "exit")
         return(invisible())
-      if (stringr::str_starts(r, "cd "))
+      if (   stringr::str_starts(r, "cd ")
+          || stringr::str_trim(r) == "cd")
         current_dir <- treat_cd_case(r, current_dir)
       else
         system(stringr::str_c("cd ", current_dir, " && ", r))
@@ -35,16 +37,21 @@ parent_dir <- function(dir) {
     stringr::str_replace(dir, "/[^/]*$", "")
 }
 
-
 treat_cd_case <- function(r, current_dir) {
   new_directory_name <-
     stringr::str_trim(stringr::str_remove(r, "cd "))
-  new_directory <- paste0(current_dir, "/", new_directory_name)
 
-  if (!fs::dir_exists(new_directory)) {
-    cat(new_directory, "is not an existing directory...")
-    return(current_dir)
-  }
+  # if (new_directory_name == "") {
+  #   new_directory_name <- "~"
+  # }
+
+ new_directory <- paste0(current_dir, "/", new_directory_name)
+
+ if (   stringr::str_starts(new_directory_name, "/")
+     || stringr::str_detect(new_directory_name, "$")) {
+   new_directory <- new_directory_name
+ }
+
   current_dir <-
     system(stringr::str_c("cd ", current_dir, " && ",
                           r , " && pwd"),
@@ -53,14 +60,15 @@ treat_cd_case <- function(r, current_dir) {
   return(current_dir)
 }
 
-
 format_prompt <- function(complete_path, current_dir) {
-  short_name <- function(dir)
-    stringr::str_extract(dir, "[^/]*$")
 
-  if (complete_path)
+  short_name <- function(dir) stringr::str_extract(dir, "[^/]*$")
+
+  if (complete_path) {
     path <- current_dir
-  else
+  } else {
     path <- short_name(current_dir)
+  }
+
   stringr::str_c(path, " $ ")
 }
